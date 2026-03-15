@@ -7,6 +7,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,13 +23,16 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws  Exception {
-        http.authorizeHttpRequests( authorizeRequests ->
-                authorizeRequests.anyRequest().authenticated());
+        http.authorizeHttpRequests( request ->
+                request.requestMatchers("/h2-console/**").permitAll()
+                        .anyRequest().authenticated());
         http.sessionManagement( session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 //        http.formLogin(Customizer.withDefaults());
         http.httpBasic(Customizer.withDefaults());
-
+        http.headers( headers ->
+                headers.frameOptions( frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
+        http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 
